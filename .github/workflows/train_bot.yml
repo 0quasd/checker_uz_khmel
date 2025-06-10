@@ -22,3 +22,16 @@ jobs:
           sudo apt-get install -y chromium-chromedriver
       - name: Run bot
         run: python final_bot_alarm_presence_only.py
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libxss1 libappindicator3-1
+      - name: Debug Chrome
+        run: |
+          chromium-browser --version
+          chromedriver --version
+          pip install selenium
+          python -c "from selenium import webdriver; from selenium.webdriver.chrome.options import Options; o=Options(); o.add_argument('--headless'); o.add_argument('--no-sandbox'); d=webdriver.Chrome(options=o); d.get('https://google.com'); print(d.title); d.quit()"
+
+
