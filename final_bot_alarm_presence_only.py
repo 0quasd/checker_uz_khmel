@@ -1,7 +1,7 @@
+python
 import logging
 import time
 import os
-
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -11,15 +11,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-
-driver = webdriver.Chrome(options=chrome_options)
-
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 STATION_FROM_CODE = '2200300'
-STATION_TO_CODE = '2218300'
+STATION_TO_CODE = '2218214'
 DEPARTURE_DATE = '2025-06-29'
 
 SEARCH_INTERVAL_SECONDS = 120
@@ -45,18 +41,21 @@ def does_train_exist():
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36')
-
+    
+    current_folder = os.getcwd()
+    driver_path = os.path.join(current_folder, 'chromedriver.exe')
+    chrome_binary_path = os.path.join(current_folder, 'chrome-win64', 'chrome.exe')
 
     if not os.path.exists(chrome_binary_path):
         logging.error(f"НЕ ЗНАЙДЕНО БРАУЗЕР! Перевірте шлях: {chrome_binary_path}")
         return False
     
-
+    chrome_options.binary_location = chrome_binary_path
     
     driver = None
     try:
         service = ChromeService(executable_path=driver_path)
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get(search_url)
         WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CLASS_NAME, "TripUnit"))
