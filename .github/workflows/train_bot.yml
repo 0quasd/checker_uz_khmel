@@ -1,37 +1,35 @@
 name: Run Train Presence Bot
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 30          # підстраховка, можна більше
     env:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      CHAT_ID: ${{ secrets.CHAT_ID }}
+      CHAT_ID:  ${{ secrets.CHAT_ID }}
+
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          pip install selenium requests
-          sudo apt-get update
-          sudo apt-get install -y chromium-chromedriver
-      - name: Run bot
-        run: python final_bot_alarm_presence_only.py
-      - name: Install Chrome dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver
-          sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libxss1 libappindicator3-1
-      - name: Debug Chrome
-        run: |
-          chromium-browser --version
-          chromedriver --version
-          pip install selenium
-          python -c "from selenium import webdriver; from selenium.webdriver.chrome.options import Options; o=Options(); o.add_argument('--headless'); o.add_argument('--no-sandbox'); d=webdriver.Chrome(options=o); d.get('https://google.com'); print(d.title); d.quit()"
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
+      - run: pip install --no-cache-dir selenium requests
+
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
+      # keep-alive у фоновому режимі
+      - run: while true; do echo "🏓 alive"; sleep 60; done &
+
+      - run: python final_bot_alarm_presence_only.py
